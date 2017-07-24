@@ -10,6 +10,8 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/ui-lightness/jquery-ui.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script src="datepicker.js"></script>
+
 <script type="text/javascript">
 /*!
  * jQuery UI Ympicker 1.8.21
@@ -1019,7 +1021,7 @@
             var year = -1;
             var month = -1;
             var day = 1;
-            var doy = 1;
+            var doy = -1;
             var literal = false;
             // Check whether a format character is doubled
             var lookAhead = function (match) {
@@ -1436,7 +1438,7 @@
         _generateHTML: function (inst) {
             var today = new Date();
             today = this._daylightSavingAdjust(
-                new Date(today.getFullYear(), today.getMonth(), today.getDate())); // clear time
+                new Date(today.getFullYear(), today.getMonth(), 1)); // clear time
             var isRTL = this._get(inst, 'isRTL');
             var showButtonPanel = this._get(inst, 'showButtonPanel');
             var hideIfNoPrevNext = this._get(inst, 'hideIfNoPrevNext');
@@ -1583,27 +1585,27 @@
                                     (printDate.getTime() == selectedDate.getTime() && drawMonth == inst.selectedMonth && inst._keyEvent) || // user pressed key
                                     (defaultDate.getTime() == printDate.getTime() && defaultDate.getTime() == selectedDate.getTime()) ?
                                     // or defaultDate is current printedDate and defaultDate is selectedDate
-                                    ' ' + this._dayOverClass : '') + // highlight selected day
+                                    ' ' + this._dayOverClass : '') ; // highlight selected day
 
-                                (unselectable ? ' ' + this._unselectableClass + ' ui-state-disabled' : '') +  // highlight unselectable days
+                            tbody += (unselectable ? ' ' + this._unselectableClass + ' ui-state-disabled' : '');  // highlight unselectable days
 
-                                (otherMonth && !showOtherMonths ? 
+                            tbody += (otherMonth && !showOtherMonths ? 
                                     '' : 
                                     ' ' + daySettings[1] + // highlight custom dates
 
                                     (printDate.getTime() == currentDate.getTime() ? ' ' + this._currentClass : '') + // highlight selected day
                                     (printDate.getTime() == today.getTime() ? ' ui-datepicker-today' : '')
-                                ) + '"' + // highlight today (if different)
+                                ) + '"' ; // highlight today (if different)
 
-                                ((!otherMonth || showOtherMonths) && daySettings[2] ? ' title="' + daySettings[2] + '"' : '') + // cell title
+                            tbody += ((!otherMonth || showOtherMonths) && daySettings[2] ? ' title="' + daySettings[2] + '"' : '')  // cell title
 
-                                (unselectable ? 
+                            tbody += (unselectable ? 
                                     '' : 
                                     ' onclick="DP_jQuery_' + dpuuid + '.ympicker._selectDay(\'#' +
     //							inst.id + '\',' + printDate.getMonth() + ',' + printDate.getFullYear() + ', this);return false;"') + '>' + // actions
-                                    inst.id + '\',' + printDate.getMonth() + ',' + printDate.getFullYear() + ',' + printDate.getDate() + ', this);return false;"') + '>' + // actions
+                                    inst.id + '\',' + printDate.getMonth() + ',' + printDate.getFullYear() + ',' + printDate.getDate() + ', this);return false;"') + '>' ; // actions
 
-                                (otherMonth && !showOtherMonths ? 
+                            tbody += (otherMonth && !showOtherMonths ? 
                                     '&#xa0;' : // display for other months
                                     (unselectable ? 
                                         '<span class="ui-state-default">' + printDate.getDate() + '</span>' : 
@@ -1916,5 +1918,6 @@ $(function () {
 <body>
 <p>Hello World</p>
 <input type="text" class="ympicker">
+<input type="text" class="datepicker">
 </body>
 </html>
