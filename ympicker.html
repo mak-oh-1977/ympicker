@@ -11,6 +11,11 @@
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/ui-lightness/jquery-ui.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <script src="datepicker.js"></script>
+<style>
+div#ui-ympicker-div table td{
+    width:25%;
+}
+</style>
 
 <script type="text/javascript">
 /*!
@@ -45,7 +50,7 @@
         this._disabledInputs = []; // List of date picker inputs that have been disabled
         this._ympickerShowing = false; // True if the popup picker is showing , false if not
         this._inDialog = false; // True if showing within a "dialog", false if not
-        this._mainDivId = 'ui-datepicker-div'; // The ID of the main ympicker division
+        this._mainDivId = 'ui-ympicker-div'; // The ID of the main ympicker division
         this._inlineClass = 'ui-datepicker-inline'; // The name of the inline marker class
         this._appendClass = 'ui-datepicker-append'; // The name of the append marker class
         this._triggerClass = 'ui-datepicker-trigger'; // The name of the trigger marker class
