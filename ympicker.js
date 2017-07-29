@@ -291,54 +291,6 @@
             inst.dpDiv.css("display", "block");
         },
 
-        /* Pop-up the date picker in a "dialog" box.
-           @param  input     element - ignored
-           @param  date      string or Date - the initial date to display
-           @param  onSelect  function - the function to call when a date is selected
-           @param  settings  object - update the dialog date picker instance's settings (anonymous object)
-           @param  pos       int[2] - coordinates for the dialog's position within the screen or
-                             event - with x/y coordinates or
-                             leave empty for default (screen centre)
-           @return the manager object */
-        _dialogYmpicker: function (input, date, onSelect, settings, pos) {
-            var inst = this._dialogInst; // internal instance
-            if (!inst) {
-                this.uuid += 1;
-                var id = 'dp' + this.uuid;
-                this._dialogInput = $('<input type="text" id="' + id +
-                    '" style="position: absolute; top: -100px; width: 0px; z-index: -10;"/>');
-                this._dialogInput.keydown(this._doKeyDown);
-                $('body').append(this._dialogInput);
-                inst = this._dialogInst = this._newInst(this._dialogInput, false);
-                inst.settings = {};
-                $.data(this._dialogInput[0], PROP_NAME, inst);
-            }
-            extendRemove(inst.settings, settings || {});
-            date = (date && date.constructor == Date ? this._formatDate(inst, date) : date);
-            this._dialogInput.val(date);
-
-            this._pos = (pos ? (pos.length ? pos : [pos.pageX, pos.pageY]) : null);
-            if (!this._pos) {
-                var browserWidth = document.documentElement.clientWidth;
-                var browserHeight = document.documentElement.clientHeight;
-                var scrollX = document.documentElement.scrollLeft || document.body.scrollLeft;
-                var scrollY = document.documentElement.scrollTop || document.body.scrollTop;
-                this._pos = // should use actual width/height below
-                    [(browserWidth / 2) - 100 + scrollX, (browserHeight / 2) - 150 + scrollY];
-            }
-
-            // move input on screen for focus, but hidden behind dialog
-            this._dialogInput.css('left', (this._pos[0] + 20) + 'px').css('top', this._pos[1] + 'px');
-            inst.settings.onSelect = onSelect;
-            this._inDialog = true;
-            this.dpDiv.addClass(this._dialogClass);
-            this._showYmpicker(this._dialogInput[0]);
-            if ($.blockUI)
-                $.blockUI(this.dpDiv);
-            $.data(this._dialogInput[0], PROP_NAME, inst);
-            return this;
-        },
-
         /* Detach a ympicker from its control.
            @param  target    element - the target input field or division or span */
         _destroyYmpicker: function (target) {
@@ -546,42 +498,6 @@
                         break; // select the value on enter
                     case 27: $.ympicker._hideYmpicker();
                         break; // hide on escape
-                    case 33: $.ympicker._adjustDate(event.target, (event.ctrlKey ?
-                                -$.ympicker._get(inst, 'stepBigMonths') :
-                                -$.ympicker._get(inst, 'stepMonths')), 'M');
-                        break; // previous month/year on page up/+ ctrl
-                    case 34: $.ympicker._adjustDate(event.target, (event.ctrlKey ?
-                                +$.ympicker._get(inst, 'stepBigMonths') :
-                                +$.ympicker._get(inst, 'stepMonths')), 'M');
-                        break; // next month/year on page down/+ ctrl
-                    case 35: if (event.ctrlKey || event.metaKey) $.ympicker._clearDate(event.target);
-                        handled = event.ctrlKey || event.metaKey;
-                        break; // clear on ctrl or command +end
-                    case 36: if (event.ctrlKey || event.metaKey) $.ympicker._gotoToday(event.target);
-                        handled = event.ctrlKey || event.metaKey;
-                        break; // current on ctrl or command +home
-                    case 37: if (event.ctrlKey || event.metaKey) $.ympicker._adjustDate(event.target, (isRTL ? +1 : -1), 'D');
-                        handled = event.ctrlKey || event.metaKey;
-                        // -1 day on ctrl or command +left
-                        if (event.originalEvent.altKey) $.ympicker._adjustDate(event.target, (event.ctrlKey ?
-									-$.ympicker._get(inst, 'stepBigMonths') :
-									-$.ympicker._get(inst, 'stepMonths')), 'M');
-                        // next month/year on alt +left on Mac
-                        break;
-                    case 38: if (event.ctrlKey || event.metaKey) $.ympicker._adjustDate(event.target, -7, 'D');
-                        handled = event.ctrlKey || event.metaKey;
-                        break; // -1 week on ctrl or command +up
-                    case 39: if (event.ctrlKey || event.metaKey) $.ympicker._adjustDate(event.target, (isRTL ? -1 : +1), 'D');
-                        handled = event.ctrlKey || event.metaKey;
-                        // +1 day on ctrl or command +right
-                        if (event.originalEvent.altKey) $.ympicker._adjustDate(event.target, (event.ctrlKey ?
-									+$.ympicker._get(inst, 'stepBigMonths') :
-									+$.ympicker._get(inst, 'stepMonths')), 'M');
-                        // next month/year on alt +right
-                        break;
-                    case 40: if (event.ctrlKey || event.metaKey) $.ympicker._adjustDate(event.target, +7, 'D');
-                        handled = event.ctrlKey || event.metaKey;
-                        break; // +1 week on ctrl or command +down
                     default: handled = false;
                 }
             else if (event.keyCode == 36 && event.ctrlKey) // display the date picker on ctrl+home
@@ -1710,11 +1626,12 @@
 
         /* Determines if we should allow a "next/prev" month display change. */
         _canAdjustMonth: function (inst, offset, curYear, curMonth) {
-            var numMonths = this._getNumberOfMonths(inst);
-            var date = this._daylightSavingAdjust(new Date(curYear,
-                curMonth + (offset < 0 ? offset : numMonths[0] * numMonths[1]), 1));
+            var date;
             if (offset < 0)
-                date.setDate(this._getDaysInMonth(date.getFullYear(), date.getMonth()));
+                date = this._daylightSavingAdjust(new Date(curYear + offset, 12, 31));
+            else
+                date = this._daylightSavingAdjust(new Date(curYear + offset, 1, 1));
+                
             return this._isInRange(inst, date);
         },
 
