@@ -161,9 +161,7 @@
             inst.settings = $.extend({}, settings || {}, inlineSettings || {});
             if (nodeName == 'input') {
                 this._connectYmpicker(target, inst);
-            } else if (inline) {
-                this._inlineYmpicker(target, inst);
-            }
+            } 
         },
 
         /* Create a new instance object. */
@@ -267,30 +265,6 @@
             }
         },
 
-        /* Attach an inline date picker to a div. */
-        _inlineYmpicker: function (target, inst) {
-            var divSpan = $(target);
-            if (divSpan.hasClass(this.markerClassName))
-                return;
-            divSpan.addClass(this.markerClassName).append(inst.dpDiv).
-                bind("setData.ympicker", function (event, key, value) {
-                    inst.settings[key] = value;
-                }).bind("getData.ympicker", function (event, key) {
-                    return this._get(inst, key);
-                });
-            $.data(target, PROP_NAME, inst);
-            this._setDate(inst, this._getDefaultDate(inst), true);
-            this._updateYmpicker(inst);
-            this._updateAlternate(inst);
-            //If disabled option is true, disable the ympicker before showing it (see ticket #5665)
-            if (inst.settings.disabled) {
-                this._disableYmpicker(target);
-            }
-            // Set display:block in place of inst.dpDiv.show() which won't work on disconnected elements
-            // http://bugs.jqueryui.com/ticket/7552 - A Ympicker created on a detached div has zero height
-            inst.dpDiv.css("display", "block");
-        },
-
         /* Detach a ympicker from its control.
            @param  target    element - the target input field or division or span */
         _destroyYmpicker: function (target) {
@@ -309,8 +283,7 @@
                     unbind('keydown', this._doKeyDown).
                     unbind('keypress', this._doKeyPress).
                     unbind('keyup', this._doKeyUp);
-            } else if (nodeName == 'div' || nodeName == 'span')
-                $target.removeClass(this.markerClassName).empty();
+            }
         },
 
         /* Enable the date picker to a jQuery selection.
@@ -327,12 +300,6 @@
                 inst.trigger.filter('button').
                     each(function () { this.disabled = false; }).end().
                     filter('img').css({ opacity: '1.0', cursor: '' });
-            }
-            else if (nodeName == 'div' || nodeName == 'span') {
-                var inline = $target.children('.' + this._inlineClass);
-                inline.children().removeClass('ui-state-disabled');
-                inline.find("select.ui-datepicker-month, select.ui-datepicker-year").
-                    removeAttr("disabled");
             }
             this._disabledInputs = $.map(this._disabledInputs,
                 function (value) { return (value == target ? null : value); }); // delete entry
@@ -352,12 +319,6 @@
                 inst.trigger.filter('button').
                     each(function () { this.disabled = true; }).end().
                     filter('img').css({ opacity: '0.5', cursor: 'default' });
-            }
-            else if (nodeName == 'div' || nodeName == 'span') {
-                var inline = $target.children('.' + this._inlineClass);
-                inline.children().addClass('ui-state-disabled');
-                inline.find("select.ui-datepicker-month, select.ui-datepicker-year").
-                    attr("disabled", "disabled");
             }
             this._disabledInputs = $.map(this._disabledInputs,
                 function (value) { return (value == target ? null : value); }); // delete entry
@@ -1377,14 +1338,14 @@
                 '>' + currentText + '</button>' : '') + (isRTL ? '' : controls) + '</div>' : '';
             var firstDay = parseInt(this._get(inst, 'firstDay'), 10);
             firstDay = (isNaN(firstDay) ? 0 : firstDay);
-            var dayNames = this._get(inst, 'dayNames');
-            var dayNamesShort = this._get(inst, 'dayNamesShort');
+
             var monthNames = this._get(inst, 'monthNames');
             var monthNamesShort = this._get(inst, 'monthNamesShort');
             var beforeShowDay = this._get(inst, 'beforeShowDay');
             var showOtherMonths = this._get(inst, 'showOtherMonths');
             var selectOtherMonths = this._get(inst, 'selectOtherMonths');
             var defaultDate = this._getDefaultDate(inst);
+
             var html = '';
             for (var row = 0; row < numMonths[0]; row++) {
                 var group = '';
@@ -1409,7 +1370,7 @@
                         (/all|left/.test(cornerClass) && row == 0 ? (isRTL ? next : prev) : '') +
                         (/all|right/.test(cornerClass) && row == 0 ? (isRTL ? prev : next) : '') +
                         this._generateMonthYearHeader(inst, drawMonth, drawYear, minDate, maxDate,
-                        row > 0 || col > 0, monthNames, monthNamesShort) + // draw month headers
+                        row > 0 || col > 0) + // draw month headers
                         '</div><table class="ui-datepicker-calendar"><tbody>';
 
                     var daysInMonth = this._getDaysInMonth(drawYear, drawMonth);
@@ -1503,34 +1464,13 @@
 
         /* Generate the month and year header. */
         _generateMonthYearHeader: function (inst, drawMonth, drawYear, minDate, maxDate,
-                secondary, monthNames, monthNamesShort) {
+                secondary) {
             var changeMonth = this._get(inst, 'changeMonth');
             var changeYear = this._get(inst, 'changeYear');
             var showMonthAfterYear = this._get(inst, 'showMonthAfterYear');
             var html = '<div class="ui-datepicker-title">';
             var monthHtml = '';
-            // month selection
-            /*
-                    if (secondary || !changeMonth)
-                        monthHtml += '<span class="ui-datepicker-month">' + monthNames[drawMonth] + '</span>';
-                    else {
-                        var inMinYear = (minDate && minDate.getFullYear() == drawYear);
-                        var inMaxYear = (maxDate && maxDate.getFullYear() == drawYear);
-                        monthHtml += '<select class="ui-datepicker-month" ' +
-                            'onchange="DP_jQuery_' + dpuuid + '.ympicker._selectMonthYear(\'#' + inst.id + '\', this, \'M\');" ' +
-                            '>';
-                        for (var month = 0; month < 12; month++) {
-                            if ((!inMinYear || month >= minDate.getMonth()) &&
-                                    (!inMaxYear || month <= maxDate.getMonth()))
-                                monthHtml += '<option value="' + month + '"' +
-                                    (month == drawMonth ? ' selected="selected"' : '') +
-                                    '>' + monthNamesShort[month] + '</option>';
-                        }
-                        monthHtml += '</select>';
-                    }
-                    if (!showMonthAfterYear)
-                        html += monthHtml + (secondary || !(changeMonth && changeYear) ? '&#xa0;' : '');
-            */
+
             // year selection
             if (!inst.yearshtml) {
                 inst.yearshtml = '';
